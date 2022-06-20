@@ -2,11 +2,11 @@ package gr.streetthugssalonika.Models;
 
 public class UserModel {
     private int id;
-    private String user;
+    private String name;
 
-    public UserModel(int id, String user) {
+    public UserModel(int id, String name) {
         this.id = id;
-        this.user = user;
+        this.name = name;
     }
 
     public int getId() {
@@ -17,11 +17,11 @@ public class UserModel {
         this.id = id;
     }
 
-    public String getUser() {
-        return user;
+    public String getName() {
+        return name;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    public void setName(String name) {
+        this.name = name;
     }
 }

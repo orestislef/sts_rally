@@ -32,12 +32,14 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import gr.streetthugssalonika.Interfaces.ApiSTS;
 import gr.streetthugssalonika.Models.LocationModel;
 import gr.streetthugssalonika.Models.PolyLineModel;
+import gr.streetthugssalonika.Models.UserModel;
 import gr.streetthugssalonika.databinding.ActivityMapsBinding;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -75,6 +77,9 @@ public class MapsActivity extends FragmentActivity implements
     private String polyLine = "";
     protected LocationManager locationManager;
 
+    List<UserModel> users;
+    List<LocationModel> locations;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,15 +90,73 @@ public class MapsActivity extends FragmentActivity implements
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        Objects.requireNonNull(mapFragment).getMapAsync(this);
 
         retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        getPolyLines();
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getLocations();
+        getPolyLines();
+        getUsers();
+    }
+
+    private void getLocations() {
+        locations = new ArrayList<>();
+
+        apiInterfaces = retrofit.create(ApiSTS.class);
+
+        Call<List<LocationModel>> call = apiInterfaces.getAllLocations();
+
+        call.enqueue(new Callback<List<LocationModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<LocationModel>> call, @NonNull Response<List<LocationModel>> response) {
+                if (response.isSuccessful()) {
+                    for (LocationModel mLocations : locations) {
+                        locations.add(mLocations);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<LocationModel>> call, @NonNull Throwable t) {
+                Toast.makeText(MapsActivity.this, "Failed to get Locations", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+    }
+
+    private void getUsers() {
+        users = new ArrayList<>();
+
+        apiInterfaces = retrofit.create(ApiSTS.class);
+
+        Call<List<UserModel>> call = apiInterfaces.getAllUsers();
+
+        call.enqueue(new Callback<List<UserModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<UserModel>> call, @NonNull Response<List<UserModel>> response) {
+                if (response.isSuccessful()) {
+                    for (UserModel mUser : users) {
+                        users.add(mUser);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<UserModel>> call, @NonNull Throwable t) {
+                Toast.makeText(MapsActivity.this, "Failed to get Polyline", Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
     private void getPolyLines() {
@@ -187,6 +250,29 @@ public class MapsActivity extends FragmentActivity implements
                 .snippet("Ending at 22:00")
                 .title("Rally end Point")
                 .icon(BitmapFromVector(getApplicationContext(), R.drawable.finish)));
+
+        //see how many users and add markers
+
+        //for dev: Manual add 2 users and for each a location
+        users.add(0, new UserModel(1, "hello1"));
+        users.add(0, new UserModel(2, "hello2"));
+
+        locations.add(0, new LocationModel(1, "40.640064", "22.944420"));
+        locations.add(1, new LocationModel(2, "40.630208", "22.949096"));
+        //*********************
+        if (users != null && locations != null) {
+            Log.d(TAG, "onMapReady: Found " + users.size() + " users to report location");
+            for (int i = 0; i < users.size(); i++) {
+                Log.d(TAG, "onMapReady: User: " + users.get(i).getName());
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(Double.parseDouble(locations.get(i).getLatitude()), Double.parseDouble(locations.get(i).getLongitude())))//here to take from all location by id
+                        .snippet("leader: " + users.get(i).getName())
+                        .title("#" + Integer.toString(users.get(i).getId())) //to see if need for parse..here because of id(int) to string
+                        .icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_where_to_vote_24)));
+            }
+        } else {
+            Log.d(TAG, "onMapReady: No Active users to follow");
+        }
     }
 
     // we need this to convert ic to bitmap
@@ -245,7 +331,7 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        Log.d(TAG, "onLocationChanged: lat: " + location.getLatitude() + " long: " + location.getLongitude());
+        Log.d(TAG, "onLocationChanged: Current Location:\t lat: " + location.getLatitude() + " long: " + location.getLongitude());
         sendLocation(userId, location);
     }
 
@@ -268,7 +354,7 @@ public class MapsActivity extends FragmentActivity implements
             @Override
             public void onFailure(@NonNull Call<List<LocationModel>> call, @NonNull Throwable t) {
                 Toast.makeText(MapsActivity.this, "Failed to send location", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "location didn't send");
+                Log.d(TAG, "Failed to send location");
 
             }
         });

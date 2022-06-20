@@ -20,5 +20,11 @@ public interface ApiSTS {
                                                       @Query("longitude") String longitudeOf,
                                                       @Query("latitude") String latitudeOf);
     @GET("sts/sts_getby_id_users.php/")
-    Call<List<UserModel>> getUserById(@Query("id") int userId);
+    Call<List<UserModel>> getAllUsers(@Query("id") int userId);
+
+    @GET("sts/sts_get_all_users.php/")
+    Call<List<UserModel>> getAllUsers();
+
+    @GET("sts/sts_get_all_location.php/")
+    Call<List<LocationModel>> getAllLocations();
 }
