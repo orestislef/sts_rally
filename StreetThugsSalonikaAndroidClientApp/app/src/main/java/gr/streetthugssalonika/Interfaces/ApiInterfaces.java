@@ -2,6 +2,7 @@ package gr.streetthugssalonika.Interfaces;
 
 import java.util.List;
 
+import gr.streetthugssalonika.Models.LocationModel;
 import gr.streetthugssalonika.Models.PolyLine;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -12,5 +13,9 @@ public interface ApiInterfaces {
     @GET("sts/sts_getby_id_polyline.php/")
     Call<List<PolyLine>> getPolyLines(@Query("id") int polylineId);
 
-    //retro
+
+    @GET("sts/sts_insert_latlong_into_location.php/")
+    Call<List<LocationModel>> sendCurrentLocation(@Query("id") int userId,
+                                                  @Query("longitude") String longitudeOf,
+                                                  @Query("latitude") String latitudeOf);
 }

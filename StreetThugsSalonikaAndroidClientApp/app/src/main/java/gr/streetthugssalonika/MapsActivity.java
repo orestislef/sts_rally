@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 
 import gr.streetthugssalonika.Interfaces.ApiInterfaces;
+import gr.streetthugssalonika.Models.LocationModel;
 import gr.streetthugssalonika.Models.PolyLine;
 import gr.streetthugssalonika.databinding.ActivityMapsBinding;
 import retrofit2.Call;
@@ -61,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements
 
     private Boolean mLocationPermissionsGranted = false;
 
-    private FusedLocationProviderClient mfusedLocationProviderclient;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
     private LatLng lastKnownLocation = null;
 
     Retrofit retrofit;
@@ -144,6 +145,7 @@ public class MapsActivity extends FragmentActivity implements
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
+        //Runtime Permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             getLocationPermission();
             return;
@@ -241,6 +243,38 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        Log.d(TAG, "onLocationChanged: lat: " + location.getLatitude() + "long: " + location.getLongitude());
+        Log.d(TAG, "onLocationChanged: lat: " + location.getLatitude() + " long: " + location.getLongitude());
+
+        sendLongLang(location);
+
+    }
+
+    private void sendLongLang(Location location) {
+
+        apiInterfaces = retrofit.create(ApiInterfaces.class);
+
+        Call<List<LocationModel>> call = apiInterfaces.sendCurrentLocation(1,Double.toString(location.getLongitude()), Double.toString(location.getLatitude()));
+
+        call.enqueue(new Callback<List<LocationModel>>() {
+            @Override
+            public void onResponse(Call<List<LocationModel>> call, Response<List<LocationModel>> response) {
+                if (!response.isSuccessful()) {
+                    return;
+                } else {
+                    Toast.makeText(MapsActivity.this, "Location Sended", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG,"location success");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<List<LocationModel>> call, Throwable t) {
+                Toast.makeText(MapsActivity.this, "Failedddddd", Toast.LENGTH_SHORT).show();
+                Log.d(TAG,"location didnt sended");
+
+            }
+        });
+
+
     }
 }
