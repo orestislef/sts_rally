@@ -1,28 +1,19 @@
 package gr.streetthugssalonika;
 
-import static android.provider.SettingsSlicesContract.KEY_LOCATION;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -36,14 +27,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.maps.android.PolyUtil;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.List;
+import java.util.Objects;
 
+import gr.streetthugssalonika.Interfaces.ApiInterfaces;
+import gr.streetthugssalonika.Models.PolyLine;
 import gr.streetthugssalonika.databinding.ActivityMapsBinding;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
@@ -57,11 +53,17 @@ public class MapsActivity extends FragmentActivity implements
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+    private static final String BASE_URL = "http://localhost/";
 
     private Boolean mLocationPermissionsGranted = false;
 
     private FusedLocationProviderClient mfusedLocationProviderclient;
     private LatLng lastKnownLocation = null;
+
+    Retrofit retrofit;
+    ApiInterfaces apiInterfaces;
+
+    private String polyLine = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +77,39 @@ public class MapsActivity extends FragmentActivity implements
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        getPolyLines();
+
+    }
+
+    private void getPolyLines() {
+
+        apiInterfaces = retrofit.create(ApiInterfaces.class);
+
+        Call<List<PolyLine>> call = apiInterfaces.getPolyLines(1);
+
+        call.enqueue(new Callback<List<PolyLine>>() {
+            @Override
+            public void onResponse(Call<List<PolyLine>> call, Response<List<PolyLine>> response) {
+
+                if(!response.isSuccessful()){
+                    return;
+                }else{
+                   polyLine = response.body().get(0).getPolyline();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<List<PolyLine>> call, Throwable t) {
+                Toast.makeText(MapsActivity.this, "Failedddddd", Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
     }
 
@@ -122,12 +157,16 @@ public class MapsActivity extends FragmentActivity implements
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLong, 12f));
 
-        PolylineOptions polylineOptions = new PolylineOptions()
-                .width(14)
-                .color(Color.BLUE)
-                .addAll(PolyUtil.decode(getResources().getString(R.string.rally_polyline)));
+        if((!Objects.equals(polyLine, ""))){
+            PolylineOptions polylineOptions = new PolylineOptions()
+                    .width(14)
+                    .color(Color.BLUE)
+                    .addAll(PolyUtil.decode(polyLine));
 
-        Polyline polyline = mMap.addPolyline(polylineOptions);
+            Polyline polyline = mMap.addPolyline(polylineOptions);
+        }
+
+
 
         LatLng endLatLong = new LatLng(40.57852, 22.97423);
 
