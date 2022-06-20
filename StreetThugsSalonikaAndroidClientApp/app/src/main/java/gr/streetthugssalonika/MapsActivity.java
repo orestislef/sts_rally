@@ -35,9 +35,9 @@ import com.google.maps.android.PolyUtil;
 import java.util.List;
 import java.util.Objects;
 
-import gr.streetthugssalonika.Interfaces.ApiInterfaces;
+import gr.streetthugssalonika.Interfaces.ApiSTS;
 import gr.streetthugssalonika.Models.LocationModel;
-import gr.streetthugssalonika.Models.PolyLine;
+import gr.streetthugssalonika.Models.PolyLineModel;
 import gr.streetthugssalonika.databinding.ActivityMapsBinding;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -51,7 +51,6 @@ public class MapsActivity extends FragmentActivity implements
         LocationListener {
 
     private GoogleMap mMap;
-    private ActivityMapsBinding binding;
 
     private static final String TAG = "MapActivity";
 
@@ -60,13 +59,18 @@ public class MapsActivity extends FragmentActivity implements
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     private static final String BASE_URL = "http://localhost/";
 
-    private Boolean mLocationPermissionsGranted = false;
+    Boolean mLocationPermissionsGranted = false;
 
-    private FusedLocationProviderClient mFusedLocationProviderClient;
-    private LatLng lastKnownLocation = null;
+    FusedLocationProviderClient mFusedLocationProviderClient;
+    LatLng lastKnownLocation = null;
+
+    //Hard Coded for DEV
+    Integer userId = 1;
+
+    Polyline polyline;
 
     Retrofit retrofit;
-    ApiInterfaces apiInterfaces;
+    ApiSTS apiInterfaces;
 
     private String polyLine = "";
     protected LocationManager locationManager;
@@ -75,7 +79,7 @@ public class MapsActivity extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMapsBinding.inflate(getLayoutInflater());
+        gr.streetthugssalonika.databinding.ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -94,25 +98,23 @@ public class MapsActivity extends FragmentActivity implements
 
     private void getPolyLines() {
 
-        apiInterfaces = retrofit.create(ApiInterfaces.class);
+        apiInterfaces = retrofit.create(ApiSTS.class);
 
-        Call<List<PolyLine>> call = apiInterfaces.getPolyLines(1);
+        Call<List<PolyLineModel>> call = apiInterfaces.getPolyLineById(1);
 
-        call.enqueue(new Callback<List<PolyLine>>() {
+        call.enqueue(new Callback<List<PolyLineModel>>() {
             @Override
-            public void onResponse(Call<List<PolyLine>> call, Response<List<PolyLine>> response) {
+            public void onResponse(@NonNull Call<List<PolyLineModel>> call, @NonNull Response<List<PolyLineModel>> response) {
 
-                if (!response.isSuccessful()) {
-                    return;
-                } else {
-                    polyLine = response.body().get(0).getPolyline();
+                if (response.isSuccessful()) {
+                    polyLine = Objects.requireNonNull(response.body()).get(0).getPolyline();
                 }
 
             }
 
             @Override
-            public void onFailure(Call<List<PolyLine>> call, Throwable t) {
-                Toast.makeText(MapsActivity.this, "Failedddddd", Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Call<List<PolyLineModel>> call, @NonNull Throwable t) {
+                Toast.makeText(MapsActivity.this, "Failed to get Polyline", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -157,6 +159,7 @@ public class MapsActivity extends FragmentActivity implements
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 30, this);
 
         }
+
         // Add a marker in start and move the camera
         LatLng startLatLong = new LatLng(40.62618, 22.94857);
 
@@ -174,9 +177,8 @@ public class MapsActivity extends FragmentActivity implements
                     .color(Color.BLUE)
                     .addAll(PolyUtil.decode(polyLine));
 
-            Polyline polyline = mMap.addPolyline(polylineOptions);
+            polyline = mMap.addPolyline(polylineOptions);
         }
-
 
         LatLng endLatLong = new LatLng(40.57852, 22.97423);
 
@@ -194,7 +196,7 @@ public class MapsActivity extends FragmentActivity implements
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
 
         // below line is use to set bounds to our vector drawable.
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        Objects.requireNonNull(vectorDrawable).setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
 
         // below line is use to create a bitmap for our
         // drawable which we have added.
@@ -244,33 +246,29 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onLocationChanged(@NonNull Location location) {
         Log.d(TAG, "onLocationChanged: lat: " + location.getLatitude() + " long: " + location.getLongitude());
-
-        sendLongLang(location);
-
+        sendLocation(userId, location);
     }
 
-    private void sendLongLang(Location location) {
+    private void sendLocation(Integer userId, @NonNull Location location) {
 
-        apiInterfaces = retrofit.create(ApiInterfaces.class);
+        apiInterfaces = retrofit.create(ApiSTS.class);
 
-        Call<List<LocationModel>> call = apiInterfaces.sendCurrentLocation(1,Double.toString(location.getLongitude()), Double.toString(location.getLatitude()));
+        Call<List<LocationModel>> call = apiInterfaces.sendCurrentLocationById(userId, Double.toString(location.getLongitude()), Double.toString(location.getLatitude()));
 
         call.enqueue(new Callback<List<LocationModel>>() {
             @Override
-            public void onResponse(Call<List<LocationModel>> call, Response<List<LocationModel>> response) {
-                if (!response.isSuccessful()) {
-                    return;
-                } else {
-                    Toast.makeText(MapsActivity.this, "Location Sended", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG,"location success");
+            public void onResponse(@NonNull Call<List<LocationModel>> call, @NonNull Response<List<LocationModel>> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(MapsActivity.this, "Location Sent", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "location success");
                 }
 
             }
 
             @Override
-            public void onFailure(Call<List<LocationModel>> call, Throwable t) {
-                Toast.makeText(MapsActivity.this, "Failedddddd", Toast.LENGTH_SHORT).show();
-                Log.d(TAG,"location didnt sended");
+            public void onFailure(@NonNull Call<List<LocationModel>> call, @NonNull Throwable t) {
+                Toast.makeText(MapsActivity.this, "Failed to send location", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "location didn't send");
 
             }
         });

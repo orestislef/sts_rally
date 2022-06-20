@@ -1,11 +1,11 @@
 package gr.streetthugssalonika.Models;
 
-public class PolyLine {
+public class PolyLineModel {
 
     private int id;
     private String polyline;
 
-    public PolyLine(int id, String polyline) {
+    public PolyLineModel(int id, String polyline) {
         this.id = id;
         this.polyline = polyline;
     }
