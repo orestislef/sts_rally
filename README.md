@@ -4,7 +4,7 @@
 
 ### Android client app 
 1. Sends Users location at database
-    location report fileter:
+    location report filter:
       min time in ms 5000(5sec). 
       min distance 30 Meters. 
 2. Gets the polyline(aka route) from api
