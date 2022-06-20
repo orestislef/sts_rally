@@ -12,6 +12,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -43,7 +46,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,
-        GoogleMap.OnMyLocationButtonClickListener {
+        GoogleMap.OnMyLocationButtonClickListener,
+        LocationListener {
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
@@ -64,6 +68,7 @@ public class MapsActivity extends FragmentActivity implements
     ApiInterfaces apiInterfaces;
 
     private String polyLine = "";
+    protected LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,10 +101,10 @@ public class MapsActivity extends FragmentActivity implements
             @Override
             public void onResponse(Call<List<PolyLine>> call, Response<List<PolyLine>> response) {
 
-                if(!response.isSuccessful()){
+                if (!response.isSuccessful()) {
                     return;
-                }else{
-                   polyLine = response.body().get(0).getPolyline();
+                } else {
+                    polyLine = response.body().get(0).getPolyline();
                 }
 
             }
@@ -145,6 +150,10 @@ public class MapsActivity extends FragmentActivity implements
         } else {
             mMap.setMyLocationEnabled(true);
             Log.d(TAG, "onMapReady: permission OK");
+
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 30, this);
+
         }
         // Add a marker in start and move the camera
         LatLng startLatLong = new LatLng(40.62618, 22.94857);
@@ -157,7 +166,7 @@ public class MapsActivity extends FragmentActivity implements
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLong, 12f));
 
-        if((!Objects.equals(polyLine, ""))){
+        if ((!Objects.equals(polyLine, ""))) {
             PolylineOptions polylineOptions = new PolylineOptions()
                     .width(14)
                     .color(Color.BLUE)
@@ -165,7 +174,6 @@ public class MapsActivity extends FragmentActivity implements
 
             Polyline polyline = mMap.addPolyline(polylineOptions);
         }
-
 
 
         LatLng endLatLong = new LatLng(40.57852, 22.97423);
@@ -229,5 +237,10 @@ public class MapsActivity extends FragmentActivity implements
     public boolean onMyLocationButtonClick() {
         Log.d(TAG, "onMyLocationButtonClick: ");
         return true;
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        Log.d(TAG, "onLocationChanged: lat: " + location.getLatitude() + "long: " + location.getLongitude());
     }
 }
