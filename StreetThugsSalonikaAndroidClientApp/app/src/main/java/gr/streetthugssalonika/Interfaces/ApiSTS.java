@@ -3,6 +3,7 @@ package gr.streetthugssalonika.Interfaces;
 import java.util.List;
 
 import gr.streetthugssalonika.Models.LocationModel;
+import gr.streetthugssalonika.Models.PlacesModel;
 import gr.streetthugssalonika.Models.PolyLineModel;
 import gr.streetthugssalonika.Models.UserModel;
 import retrofit2.Call;
@@ -17,8 +18,8 @@ public interface ApiSTS {
 
     @GET("sts/sts_insert_latlong_into_location.php/")
     Call<List<LocationModel>> sendCurrentLocationById(@Query("id") int userId,
-                                                      @Query("longitude") String longitudeOf,
-                                                      @Query("latitude") String latitudeOf);
+                                                      @Query("longitude") double longitudeOf,
+                                                      @Query("latitude") double latitudeOf);
     @GET("sts/sts_getby_id_users.php/")
     Call<List<UserModel>> getAllUsers(@Query("id") int userId);
 
@@ -27,4 +28,7 @@ public interface ApiSTS {
 
     @GET("sts/sts_get_all_location.php/")
     Call<List<LocationModel>> getAllLocations();
+
+    @GET("sts/sts_get_all_places.php/")
+    Call<List<PlacesModel>> getAllPlaces();
 }

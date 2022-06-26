@@ -4,7 +4,7 @@ package gr.streetthugssalonika.Models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class UserModel {
+public class PlacesModel {
 
     @SerializedName("id")
     @Expose
@@ -12,23 +12,33 @@ public class UserModel {
     @SerializedName("name")
     @Expose
     private String name;
+    @SerializedName("longitude")
+    @Expose
+    private String longitude;
+    @SerializedName("latitude")
+    @Expose
+    private String latitude;
 
     /**
      * No args constructor for use in serialization
      * 
      */
-    public UserModel() {
+    public PlacesModel() {
     }
 
     /**
      * 
+     * @param latitude
      * @param name
      * @param id
+     * @param longitude
      */
-    public UserModel(String id, String name) {
+    public PlacesModel(String id, String name, String longitude, String latitude) {
         super();
         this.id = id;
         this.name = name;
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     public String getId() {
@@ -47,10 +57,26 @@ public class UserModel {
         this.name = name;
     }
 
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(UserModel.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(PlacesModel.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("id");
         sb.append('=');
         sb.append(((this.id == null)?"<null>":this.id));
@@ -58,6 +84,14 @@ public class UserModel {
         sb.append("name");
         sb.append('=');
         sb.append(((this.name == null)?"<null>":this.name));
+        sb.append(',');
+        sb.append("longitude");
+        sb.append('=');
+        sb.append(((this.longitude == null)?"<null>":this.longitude));
+        sb.append(',');
+        sb.append("latitude");
+        sb.append('=');
+        sb.append(((this.latitude == null)?"<null>":this.latitude));
         sb.append(',');
         if (sb.charAt((sb.length()- 1)) == ',') {
             sb.setCharAt((sb.length()- 1), ']');
