@@ -29,5 +29,8 @@ public interface ApiSTS {
     Call<List<LocationModel>> getAllLocations();
 
     @GET("sts/sts_updateby_id_users.php/")
-    Call<List<LocationModel>> setNewUser();
+    Call<List<LocationModel>> updateUserById();
+
+    @GET("sts/sts_insert_name_into_users.php/")
+    Call<List<UserModel>> insertNewUser(@Query("name") String userName);
 }
