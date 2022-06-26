@@ -31,7 +31,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private static final String BASE_URL = "http://192.168.1.17/";
+    private static final String BASE_URL = "http://94.67.107.83:8080/";
     private ApiSTS apiInterface;
     private ProgressDialog progressDialog;
     TextView currentUserTV;

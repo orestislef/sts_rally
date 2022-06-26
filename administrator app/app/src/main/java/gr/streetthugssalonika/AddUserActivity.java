@@ -25,7 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AddUserActivity extends AppCompatActivity {
 
     private static final String TAG = "AddUserActivity";
-    private static final String BASE_URL = "http://192.168.1.17/";
+    private static final String BASE_URL = "http://94.67.107.83:8080/";
 
     TextInputLayout nameInput;
     Button addUserBtn;

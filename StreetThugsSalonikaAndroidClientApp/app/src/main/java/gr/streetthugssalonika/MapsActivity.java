@@ -57,7 +57,7 @@ public class MapsActivity extends FragmentActivity implements
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private static final String BASE_URL = "http://192.168.1.17/";
+    private static final String BASE_URL = "http://94.67.107.83:8080/";
     protected LocationManager locationManager;
     Boolean mLocationPermissionsGranted = false;
 
