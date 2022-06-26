@@ -15,10 +15,8 @@ $con = mysqli_connect($host,$username,$password,$db_name);
 $response = array();
 if($con){
 	$sql = "SELECT * FROM " . $table_name . " where id like " .$id;
-	echo $sql;
 	$result = mysqli_query($con,$sql);
 	if($result){
-		header("Content-Type: JSON");
 		$i = 0;
 		while($row = mysqli_fetch_assoc($result)){
 			$response[$i]['id'] = $row['id'];

@@ -15,13 +15,12 @@ $con = mysqli_connect($host,$username,$password,$db_name);
 $response = array();
 if($con){
 	$sql = "INSERT INTO `" . $table_name. "` (`id`, `name`) VALUES (NULL, '". $name ."')";
-	echo $sql;
 	$result = mysqli_query($con,$sql);
 	if($result){
 		echo "Inserted";
 	}
 	else{
-		echo "DataSet conection failed";
+		echo "DataSet connection failed";
 	}
 }
 ?>

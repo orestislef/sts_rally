@@ -18,13 +18,18 @@ $con = mysqli_connect($host,$username,$password,$db_name);
 $response = array();
 if($con){
 	$sql = "INSERT INTO `" . $table_name. "` (`id`, `longitude`, `latitude`) VALUES ('" . $id ."', '" . $longitude . "', '" . $latitude . "')";
-	echo $sql;
 	$result = mysqli_query($con,$sql);
 	if($result){
 		echo "Inserted";
 	}
 	else{
-		echo "DataSet conection failed";
+		$sql = "UPDATE `" . $table_name. "` SET `longitude` = '" . $longitude ."', `latitude` = '" . $latitude . "' WHERE `location`.`id` = " .$id  ;
+		$result = mysqli_query($con,$sql);
+		if($result){
+			echo "Updated";
+		}else{
+			echo "DataSet connection failed";
+		}
 	}
 }
 ?>

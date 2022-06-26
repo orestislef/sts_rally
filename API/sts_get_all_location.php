@@ -16,7 +16,6 @@ if($con){
 	$sql = "SELECT * FROM " . $table_name . "";
 	$result = mysqli_query($con,$sql);
 	if($result){
-		header("Content-Type: JSON");
 		$i = 0;
 		while($row = mysqli_fetch_assoc($result)){
 			$response[$i]['id'] = $row['id'];
@@ -27,9 +26,8 @@ if($con){
 			}
 			echo json_encode($response,JSON_PRETTY_PRINT);
 		}
-			
 	}
 	else{
-		echo "DataSet conection failed";
+		echo "DataSet connection failed";
 	}
 ?>

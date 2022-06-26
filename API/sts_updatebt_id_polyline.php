@@ -16,7 +16,6 @@ $con = mysqli_connect($host,$username,$password,$db_name);
 $response = array();
 if($con){
 	$sql = "UPDATE " . $table_name . " SET `id`='" . $id . "',`polyline`='" . $polyline . "' WHERE id = '" . $id . "'";
-	echo $sql;
 	$result = mysqli_query($con,$sql);
 	if($result){
 		echo "Updated";

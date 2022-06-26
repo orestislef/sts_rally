@@ -17,13 +17,12 @@ $con = mysqli_connect($host,$username,$password,$db_name);
 $response = array();
 if($con){
 	$sql = "UPDATE " . $table_name. " SET `id`='" . $id . "',`latitude`='" . $latitude . "',`longitude`='" . $longitude ."' WHERE id = '" . $id . "'";
-	echo $sql;
 	$result = mysqli_query($con,$sql);
 	if($result){
 		echo "Updated";
 	}
 	else{
-		echo "DataSet conection failed";
+		echo "DataSet connection failed";
 	}
 }
 ?>

@@ -17,7 +17,6 @@ if($con){
 	$sql = "SELECT * FROM " . $table_name . "";
 	$result = mysqli_query($con,$sql);
 	if($result){
-		header("\nContent-Type: JSON");
 		$i = 0;
 		while($row = mysqli_fetch_assoc($result)){
 			$response[$i]['id'] = $row['id'];

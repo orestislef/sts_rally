@@ -1,5 +1,5 @@
 <?php
-//http://localhost/sts/sts_getby_id_users.php?id=3
+//http://localhost/sts/sts_getby_id_users.php?id=1
 
 
 //DB params
