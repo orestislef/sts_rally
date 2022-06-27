@@ -3,9 +3,7 @@ package gr.streetthugssalonika;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.os.BuildCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.viewbinding.BuildConfig;
 
 import android.Manifest;
 import android.content.Context;
@@ -17,8 +15,8 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -30,6 +28,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -68,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements
     LatLng lastKnownLocation = null;
 
     //Hard Coded for DEV
-    Integer userId = 1;
+    Integer userId = -1;
 
     Polyline polyline;
 
@@ -79,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements
     List<PolyLineModel> polylines;
     List<LocationModel> locations;
     List<PlacesModel> places;
+    List<Marker> allLocationMarkers = new ArrayList<Marker>();
 
     private GoogleMap mMap;
     private String polyLine = "";
@@ -105,6 +105,15 @@ public class MapsActivity extends FragmentActivity implements
 
     }
 
+    private void removeAllMarkers() {
+        for (Marker mLocationMarker: allLocationMarkers) {
+            mLocationMarker.remove();
+        }
+        allLocationMarkers.clear();
+
+    }
+
+
     private void getLocations() {
         locations = new ArrayList<>();
         Call<List<LocationModel>> call = apiInterfaces.getAllLocations();
@@ -117,15 +126,17 @@ public class MapsActivity extends FragmentActivity implements
                         locations.addAll(response.body());
                         Log.d(TAG, "onResponse: lcoations: " + locations);
 
+                        removeAllMarkers();
 
-                        for (int i=0;i<locations.size();i++){
-                            LatLng startLatLong = new LatLng(Double.parseDouble(locations.get(i).getLatitude()), Double.parseDouble(locations.get(i).getLongitude()));
+                        for (int i = 0; i < locations.size(); i++) {
+                            LatLng latLng = new LatLng(Double.parseDouble(locations.get(i).getLatitude()), Double.parseDouble(locations.get(i).getLongitude()));
 
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(startLatLong)
-                                    .title(locations.get(i).getId())
-                                    .icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_location_on_24)));
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            markerOptions.position(latLng);
+                            markerOptions.title(locations.get(i).getId());
 
+                            Marker mLocationMarker = mMap.addMarker(markerOptions);
+                            allLocationMarkers.add(mLocationMarker);
 
                         }
 
@@ -155,7 +166,7 @@ public class MapsActivity extends FragmentActivity implements
                         Log.d(TAG, "onResponse: places: " + places);
 
                         // Add a marker in start and move the camera
-                        for (int i=0;i<places.size();i++){
+                        for (int i = 0; i < places.size(); i++) {
                             LatLng startLatLong = new LatLng(Double.parseDouble(places.get(i).getLatitude()), Double.parseDouble(places.get(i).getLongitude()));
 
                             mMap.addMarker(new MarkerOptions()
@@ -190,7 +201,7 @@ public class MapsActivity extends FragmentActivity implements
             public void onResponse(@NonNull Call<List<UserModel>> call, @NonNull Response<List<UserModel>> response) {
                 if (response.isSuccessful()) {
                     users.addAll(response.body());
-                    Log.d(TAG, "onResponse: users: "+users);
+                    Log.d(TAG, "onResponse: users: " + users);
                 }
             }
 
@@ -274,14 +285,14 @@ public class MapsActivity extends FragmentActivity implements
 
         }
 
-        //Get Data from Server
+
         getLocations();
         getPolyLines();
         getUsers();
         getPlaces();
 
-        Log.d(TAG, "onMapReady: polySize: "+polylines.size());
-        if(polylines.size() > 0){
+        Log.d(TAG, "onMapReady: polySize: " + polylines.size());
+        if (polylines.size() > 0) {
             polyLine = polylines.get(0).getPolyline();
         }
 
@@ -305,6 +316,27 @@ public class MapsActivity extends FragmentActivity implements
         } else {
             Log.d(TAG, "onMapReady: No Active users to follow");
         }
+    }
+
+    Handler handler = new Handler();
+    Runnable runnable;
+    int delay = 5 * 1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
+
+
+    @Override
+    protected void onResume() {
+        //start handler as activity become visible
+
+        handler.postDelayed(runnable = new Runnable() {
+            public void run() {
+                //do something
+                getLocations();
+                Log.d(TAG, "run: you enter the get Location loop");
+
+                handler.postDelayed(runnable, delay);
+            }
+        }, delay);
+        super.onResume();
     }
 
     // we need this to convert ic to bitmap

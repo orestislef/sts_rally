@@ -31,4 +31,5 @@ public interface ApiSTS {
 
     @GET("sts/sts_get_all_places.php/")
     Call<List<PlacesModel>> getAllPlaces();
+
 }
