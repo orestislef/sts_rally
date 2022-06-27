@@ -67,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements
     LatLng lastKnownLocation = null;
 
     //Hard Coded for DEV
-    Integer userId = 1;
+    Integer userId = -1;
 
     Polyline polyline;
 
@@ -105,6 +105,63 @@ public class MapsActivity extends FragmentActivity implements
 
     }
 
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
+
+//        if(BuildConfig.APPLICATION_ID == "gr.orestis"){
+//            userId = 0;
+//        }
+//        if(BuildConfig.APPLICATION_ID == "gr.vasilis" ){
+//            userId = 1;
+//        }
+
+        //Runtime Permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            getLocationPermission();
+            return;
+        } else {
+            mMap.setMyLocationEnabled(true);
+            Log.d(TAG, "onMapReady: permission OK");
+
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 30, this);
+
+        }
+
+
+        getLocations();
+        getPolyLines();
+        getUsers();
+        getPlaces();
+
+        Log.d(TAG, "onMapReady: polySize: " + polylines.size());
+        if (polylines.size() > 0) {
+            polyLine = polylines.get(0).getPolyline();
+        }
+
+
+        if ((!Objects.equals(polyLine, ""))) {
+
+        }
+
+        Log.d(TAG, "onMapReady: the Users size: " + users.size());
+        //see how many users and add markers
+        if (users.size() < 0 && locations.size() < 0) {
+            Log.d(TAG, "onMapReady: Found " + users.size() + " users to report location");
+            for (int i = 0; i < users.size(); i++) {
+                Log.d(TAG, "onMapReady: User: " + users.get(i).getName());
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(Double.parseDouble(locations.get(i).getLatitude()), Double.parseDouble(locations.get(i).getLongitude())))//here to take from all location by id
+                        .snippet("leader: " + users.get(i).getName())
+                        .title("#" + (users.get(i).getId())) //to see if need for parse..here because of id(int) to string
+                        .icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_where_to_vote_24)));
+            }
+        } else {
+            Log.d(TAG, "onMapReady: No Active users to follow");
+        }
+    }
+
     private void removeAllMarkers() {
         for (Marker mLocationMarker: allLocationMarkers) {
             mLocationMarker.remove();
@@ -112,7 +169,6 @@ public class MapsActivity extends FragmentActivity implements
         allLocationMarkers.clear();
 
     }
-
 
     private void getLocations() {
         locations = new ArrayList<>();
@@ -124,7 +180,7 @@ public class MapsActivity extends FragmentActivity implements
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
                         locations.addAll(response.body());
-                        Log.d(TAG, "onResponse: lcoations: " + locations);
+                        Log.d(TAG, "onResponse: locations: " + locations);
 
                         removeAllMarkers();
 
@@ -134,6 +190,7 @@ public class MapsActivity extends FragmentActivity implements
                             MarkerOptions markerOptions = new MarkerOptions();
                             markerOptions.position(latLng);
                             markerOptions.title(locations.get(i).getId());
+                            markerOptions.icon(BitmapFromVector(getApplicationContext(),R.drawable.ic_baseline_location_on_24));
 
                             Marker mLocationMarker = mMap.addMarker(markerOptions);
                             allLocationMarkers.add(mLocationMarker);
@@ -277,67 +334,9 @@ public class MapsActivity extends FragmentActivity implements
         }
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-
-//        if(BuildConfig.APPLICATION_ID == "gr.orestis"){
-//            userId = 0;
-//        }
-//        if(BuildConfig.APPLICATION_ID == "gr.vasilis" ){
-//            userId = 1;
-//        }
-
-        //Runtime Permission
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            getLocationPermission();
-            return;
-        } else {
-            mMap.setMyLocationEnabled(true);
-            Log.d(TAG, "onMapReady: permission OK");
-
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 30, this);
-
-        }
-
-
-        getLocations();
-        getPolyLines();
-        getUsers();
-        getPlaces();
-
-        Log.d(TAG, "onMapReady: polySize: " + polylines.size());
-        if (polylines.size() > 0) {
-            polyLine = polylines.get(0).getPolyline();
-        }
-
-
-        if ((!Objects.equals(polyLine, ""))) {
-
-        }
-
-        Log.d(TAG, "onMapReady: the Users size: " + users.size());
-        //see how many users and add markers
-        if (users.size() < 0 && locations.size() < 0) {
-            Log.d(TAG, "onMapReady: Found " + users.size() + " users to report location");
-            for (int i = 0; i < users.size(); i++) {
-                Log.d(TAG, "onMapReady: User: " + users.get(i).getName());
-                mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(Double.parseDouble(locations.get(i).getLatitude()), Double.parseDouble(locations.get(i).getLongitude())))//here to take from all location by id
-                        .snippet("leader: " + users.get(i).getName())
-                        .title("#" + (users.get(i).getId())) //to see if need for parse..here because of id(int) to string
-                        .icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_where_to_vote_24)));
-            }
-        } else {
-            Log.d(TAG, "onMapReady: No Active users to follow");
-        }
-    }
-
     Handler handler = new Handler();
     Runnable runnable;
-    int delay = 5 * 1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
-
+    int delay = 5 * 1000; //Delay for 5 seconds.  One second = 1000 milliseconds.
 
     @Override
     protected void onResume() {
