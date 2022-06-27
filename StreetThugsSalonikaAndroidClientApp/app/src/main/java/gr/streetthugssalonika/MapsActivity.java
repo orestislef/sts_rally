@@ -67,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements
     LatLng lastKnownLocation = null;
 
     //Hard Coded for DEV
-    Integer userId = -1;
+    Integer userId = 1;
 
     Polyline polyline;
 
@@ -167,15 +167,24 @@ public class MapsActivity extends FragmentActivity implements
 
                         // Add a marker in start and move the camera
                         for (int i = 0; i < places.size(); i++) {
-                            LatLng startLatLong = new LatLng(Double.parseDouble(places.get(i).getLatitude()), Double.parseDouble(places.get(i).getLongitude()));
+                            LatLng latLng = new LatLng(Double.parseDouble(places.get(i).getLatitude()), Double.parseDouble(places.get(i).getLongitude()));
 
-                            mMap.addMarker(new MarkerOptions()
-                                    .snippet("Starting at 20:00")
-                                    .position(startLatLong)
-                                    .title(places.get(i).getName())
-                                    .icon(BitmapFromVector(getApplicationContext(), R.drawable.start)));
+                            if(Objects.equals(places.get(i).getName(), "start")){
+                                mMap.addMarker(new MarkerOptions()
+                                        .snippet("Starting at 20:00")
+                                        .position(latLng)
+                                        .title(places.get(i).getName())
+                                        .icon(BitmapFromVector(getApplicationContext(), R.drawable.start)));
+                            }else if (Objects.equals(places.get(i).getName(), "end")){
+                                mMap.addMarker(new MarkerOptions()
+                                        .snippet("Ends at 21:00")
+                                        .position(latLng)
+                                        .title(places.get(i).getName())
+                                        .icon(BitmapFromVector(getApplicationContext(), R.drawable.finish)));
+                            }
 
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLong, 12f));
+
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12f));
                         }
 
 
@@ -271,6 +280,13 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+
+//        if(BuildConfig.APPLICATION_ID == "gr.orestis"){
+//            userId = 0;
+//        }
+//        if(BuildConfig.APPLICATION_ID == "gr.vasilis" ){
+//            userId = 1;
+//        }
 
         //Runtime Permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -417,7 +433,7 @@ public class MapsActivity extends FragmentActivity implements
 
             @Override
             public void onFailure(@NonNull Call<List<LocationModel>> call, @NonNull Throwable t) {
-                Toast.makeText(MapsActivity.this, "Failed to send location", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapsActivity.this, "Location sent", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onFailure: callExecuted: " + call.isExecuted() + "Error: " + t.getMessage());
             }
         });

@@ -30,19 +30,14 @@ android {
         viewBinding true
     }
     flavorDimensions "version"
-    productFlavors{
-        iqtaxi{
+    productFlavors {
+        orestis {
             dimension "version"
-            applicationId "gr.vasilkis"
+            applicationId = "gr.orestis"
         }
-
-        paok{
-            dimension "version"
-            applicationId = "gr.paoki.src"
-        }
-        iq {
+        vasilis {
             dimension 'version'
-            applicationId 'iq.vasilis'
+            applicationId 'gr.vasilis'
         }
     }
 
