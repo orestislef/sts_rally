@@ -29,6 +29,23 @@ android {
     buildFeatures {
         viewBinding true
     }
+    flavorDimensions "version"
+    productFlavors{
+        iqtaxi{
+            dimension "version"
+            applicationId "gr.vasilkis"
+        }
+
+        paok{
+            dimension "version"
+            applicationId = "gr.paoki.src"
+        }
+        iq {
+            dimension 'version'
+            applicationId 'iq.vasilis'
+        }
+    }
+
 }
 
 dependencies {

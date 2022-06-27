@@ -3,7 +3,9 @@ package gr.streetthugssalonika;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.BuildCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.viewbinding.BuildConfig;
 
 import android.Manifest;
 import android.content.Context;
@@ -15,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -65,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements
     LatLng lastKnownLocation = null;
 
     //Hard Coded for DEV
-    Integer userId = -1;
+    Integer userId = 1;
 
     Polyline polyline;
 
@@ -113,6 +116,19 @@ public class MapsActivity extends FragmentActivity implements
                     if (response.body() != null) {
                         locations.addAll(response.body());
                         Log.d(TAG, "onResponse: lcoations: " + locations);
+
+
+                        for (int i=0;i<locations.size();i++){
+                            LatLng startLatLong = new LatLng(Double.parseDouble(locations.get(i).getLatitude()), Double.parseDouble(locations.get(i).getLongitude()));
+
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(startLatLong)
+                                    .title(locations.get(i).getId())
+                                    .icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_location_on_24)));
+
+
+                        }
+
                     }
                 }
 
@@ -137,6 +153,21 @@ public class MapsActivity extends FragmentActivity implements
                     if (response.body() != null) {
                         places.addAll(response.body());
                         Log.d(TAG, "onResponse: places: " + places);
+
+                        // Add a marker in start and move the camera
+                        for (int i=0;i<places.size();i++){
+                            LatLng startLatLong = new LatLng(Double.parseDouble(places.get(i).getLatitude()), Double.parseDouble(places.get(i).getLongitude()));
+
+                            mMap.addMarker(new MarkerOptions()
+                                    .snippet("Starting at 20:00")
+                                    .position(startLatLong)
+                                    .title(places.get(i).getName())
+                                    .icon(BitmapFromVector(getApplicationContext(), R.drawable.start)));
+
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLong, 12f));
+                        }
+
+
                     }
                 }
 
@@ -183,6 +214,13 @@ public class MapsActivity extends FragmentActivity implements
                     if (response.body() != null) {
                         polylines.addAll(response.body());
                         Log.d(TAG, "onResponse: polyines: " + polylines);
+
+                        PolylineOptions polylineOptions = new PolylineOptions()
+                                .width(14)
+                                .color(Color.BLUE)
+                                .addAll(PolyUtil.decode(polylines.get(0).getPolyline()));
+
+                        polyline = mMap.addPolyline(polylineOptions);
                     }
                 }
 
@@ -242,33 +280,15 @@ public class MapsActivity extends FragmentActivity implements
         getUsers();
         getPlaces();
 
-        // Add a marker in start and move the camera
-        LatLng startLatLong = new LatLng(40.62618, 22.94857);
-
-        mMap.addMarker(new MarkerOptions()
-                .snippet("Starting at 20:00")
-                .position(startLatLong)
-                .title("Rally Start Point")
-                .icon(BitmapFromVector(getApplicationContext(), R.drawable.start)));
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLong, 12f));
-
-        if ((!Objects.equals(polyLine, ""))) {
-            PolylineOptions polylineOptions = new PolylineOptions()
-                    .width(14)
-                    .color(Color.BLUE)
-                    .addAll(PolyUtil.decode(polyLine));
-
-            polyline = mMap.addPolyline(polylineOptions);
+        Log.d(TAG, "onMapReady: polySize: "+polylines.size());
+        if(polylines.size() > 0){
+            polyLine = polylines.get(0).getPolyline();
         }
 
-        LatLng endLatLong = new LatLng(40.57852, 22.97423);
 
-        mMap.addMarker(new MarkerOptions()
-                .position(endLatLong)
-                .snippet("Ending at 22:00")
-                .title("Rally end Point")
-                .icon(BitmapFromVector(getApplicationContext(), R.drawable.finish)));
+        if ((!Objects.equals(polyLine, ""))) {
+
+        }
 
         Log.d(TAG, "onMapReady: the Users size: " + users.size());
         //see how many users and add markers
